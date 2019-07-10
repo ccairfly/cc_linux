@@ -38,3 +38,21 @@ rm -r [pathname]
 文件内容简短的可以使用打印在终端上
 
 10) rmdir(删除空文件夹,用处不大,建议使用rm -r)
+
+11) ln(link 连接)
+有软连接和硬连接的差别
+软连接 ln -s 源文件pathname 目标文件pathname 相当于Windows中的快捷方式
+ln 源文件pathname 目标文件pathname	
+
+12) man 查询man手册,获得帮助信息
+man 1 : 系统命令
+man 2 : Linux的API
+man 3 : c语言标准库函数
+
+5.Linux中文件类型的标记方法
+ls -l 显示详细信息的时候 开头一共10个字符 第1个是文件类型 后面9个文件权限
+- 表示普通文件.
+d 表示文件夹文件.
+l 表示连接文件,后面会用->打印出指向.
+s 表示socket文件
+p 表示pipe管道文件
