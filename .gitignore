@@ -1,0 +1,6 @@
+# Build dir
+/out/
+*.pre
+
+cc_/
+/z_history/
