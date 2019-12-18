@@ -6,8 +6,8 @@ modify by cc
 
 void app_led_init(void)
 {
-	static uint8_t led_a = 100, led_b = 6;
-	static uint32_t led_sub = 0;
+	static unsigned char led_a = 100, led_b = 6;
+	static unsigned int led_sub = 0;
     	led_sub = app_key_sub(led_a, led_b);
        if(led_sub > 10){
 		led_sub = 0;

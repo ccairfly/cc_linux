@@ -8,5 +8,5 @@ modify by cc
 void app_factory_init(void)
 {
 	if(app_get_key_init_flag() && app_get_app_flag())
-     		app_set_app_flag(false);
+     		app_set_app_flag(0);
 }

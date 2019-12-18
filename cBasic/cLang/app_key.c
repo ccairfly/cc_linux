@@ -3,38 +3,38 @@ modify by cc
 **/
 #include "app_key.h"
 
-static bool app_key_init_flag = false;
+static unsigned char app_key_init_flag = 0;
 void app_key_init(void)
 {
-    	app_set_key_init_flag(true);
+    	app_set_key_init_flag(1);
 }
 
-bool app_get_key_init_flag(void)
+unsigned char app_get_key_init_flag(void)
 {
 	return app_key_init_flag;
 }
 
-void app_set_key_init_flag(bool flag)
+void app_set_key_init_flag(unsigned char flag)
 {
 	app_key_init_flag = flag;
 }
 
-uint32_t app_key_add(uint8_t a, uint8_t b)
+unsigned int app_key_add(unsigned char a, unsigned char b)
 {
 	return a + b;
 }
 
-uint32_t app_key_sub(uint8_t a, uint8_t b)
+unsigned int app_key_sub(unsigned char a, unsigned char b)
 {
 	return a - b;
 }
 
-uint32_t app_key_mul(uint8_t a, uint8_t b)
+unsigned int app_key_mul(unsigned char a, unsigned char b)
 {
 	return a * b;
 }
 
-uint32_t app_key_div(uint8_t a, uint8_t b)
+unsigned int app_key_div(unsigned char a, unsigned char b)
 {
 	return a / b;
 }
