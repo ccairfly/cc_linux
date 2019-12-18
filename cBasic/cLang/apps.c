@@ -7,8 +7,8 @@ modify by cc
 static bool app_flag = false;
 void app_init(void)
 {
-	static uint8_t arg1;
-    	
+	app_set_app_flag(true);
+	app_key_init();
 }
 
 bool app_get_app_flag(void)
