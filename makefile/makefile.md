@@ -31,3 +31,47 @@ make的工作方式:
 5. 为所有的目标文件创建依赖关系链
 6. 根据依赖关系, 决定哪些目标要重新生成
 7. 执行生成命令
+
+文件搜索功能:
+"VPATH"变量和vpath关键字, make会在当前目录中寻找目标文件和依赖文件, 找不到的话会根据VPATH目录去寻找, 
+方法1. VPATH = src:../headers
+方法2. vpath关键字 
+vpath <pattern> <directories>	为符合模式pattern的文件指定搜索目录directories
+vpath <pattern>清除符合模式<pattern>的文件的搜索目录
+vpath 清除所有已被设置好了的文件搜索目录
+
+<pattern>需要包含%字符比如%.h 
+例如: vpath %.h ../src 在src目录下搜索所有.h
+
+伪目标:
+例如clean就是一个伪目标
+伪目标标记.PHONY 伪目标可以没有依赖文件, 直接写命令
+
+多目标:
+bigoutput littleoutput: text.g 
+	generate text.g -$(subst output,,$@) > $@ 
+上述规则等价于: 
+bigoutput: text.g 
+	generate text.g -big > bigoutput 
+littleoutput: text.g 
+	generate text.g -little > littleoutput
+其中, $@是自动化变量, 这里表示目标的集合, 类似于数组, 依次取出目标, 并执行命令
+
+静态模式:
+<targets ...>: <target-pattern>: <prereq-patterns ...> 
+<commands> 
+... 
+targets 定义了一系列的目标文件, 可以有通配符. 是目标的一个集合
+target-parrtern 是指明了targets的模式, 也就是的目标集模式
+prereq-parrterns 是目标的依赖模式, 它对target-parrtern形成的模式再进行一次依赖目标的定义
+例如:
+objects = foo.o bar.o 
+all: $(objects) 
+$(objects): %.o: %.c 
+	$(CC) -c $(CFLAGS) $< -o $@
+等价于
+foo.o: foo.c 
+	$(CC) -c $(CFLAGS) foo.c -o foo.o 
+bar.o: bar.c 
+	$(CC) -c $(CFLAGS) bar.c -o bar.o
+其中自动化变量$<表示依赖集合(这里指foo.c bar.c) $@表示目标集合(这里指foo.o bar.o)
