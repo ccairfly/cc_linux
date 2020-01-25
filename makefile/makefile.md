@@ -115,6 +115,70 @@ $(MAKE)是宏变量的意思, 给出make一些需要的参数, 便于维护
 
 
 
+使用变量
+makefile中的变量可以包含数字,字符和下划线. 但是不能包含":" "#" "="和空字符(空格回车等) $< $@ 自动化变量
+1. 变量的基础
+变量在声明的时候需要给予初值, 在使用的时候要加上$
+2. 变量中的变量
+变量中"="右侧的值也可以为变量, 有可能会变量递归定义, 
+A = $(B)
+B = $(A)
+所以可以使用":="操作符来定义变量 
+x := foo
+y := $(x) bar
+x := later
+结果为
+y = foo bar
+x = later
+这种定义方法的好处是前面的变量不能使用后面的变量
+
+变量的高级用法
+变量值的替换:替换变量中的共有部分, 其格式是$(var:a=b)或${var:a=b}, 将变量var中所有以a结尾的字符串替换成b 结尾指的是空格和结束符
+例如:
+foo := a.o b.o c.o
+bar := $(foo:.o =.c)
+
+追加变量值+=
+
+override指示符
+有变量是在命令行中设置的, 可以使用override指示符定义
+override <var> := <value>
+override <var> = <value>
+
+多行定义define关键字(命令包技术)
+define two-lines 
+echo foo 
+echo $(bar) 
+endef
+
+环境变量
+CFLAGS, 可以在make开始运行的时候载入到makefile文件中, 这个变量如果由命令行带入, 则环境变量被覆盖(除了在make指定-e参数之外)
+
+目标变量
+相当于局部变量
+target:变量声明
+target:override 变量声明
+例如
+prog : CFLAGS = -g 
+prog : prog.o foo.o bar.o 
+	$(CC) $(CFLAGS) prog.o foo.o bar.o 
+prog.o : prog.c 
+	$(CC) $(CFLAGS) prog.c 
+foo.o : foo.c 
+	$(CC) $(CFLAGS) foo.c 
+bar.o : bar.c 
+	$(CC) $(CFLAGS) bar.c
+这个示例中不管环境变量CFLAGS是什么在这个target规则中都是-g
+
+模式变量
+模式变量的使用方法和目标变量类似
+pattern:变量声明
+pattern:override 变量声明
+
+
+
+
+
 
 
 
