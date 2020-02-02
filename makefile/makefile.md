@@ -176,14 +176,116 @@ pattern:变量声明
 pattern:override 变量声明
 
 
+条件判断
+ifeq ifneq ifdef ifndef 
+else
+endif
+
+使用函数
+makefile中可以使用函数来完成一些变量的操作, 从而使make命令更加灵活, 函数调用之后, 函数的返回值可以当成变量使用
+函数的调用使用$来标识的, 其语法是$(<function> <args>) args是函数的参数, 以","隔开, 函数名和参数之间以空格隔开
+
+1.字符串处理函数
+
+字符串替换函数(重点)
+$(subst <from>,<to>,<text>)
+功能:把字符串<text>中的<from>替换成<to>
+
+模式字符串替换函数(重点)
+$(patsubst <pattern>,<replacement>,<text>)
+功能:查找<text>中的字符串中内容是否有符合<pattern>后缀的内容, 有的话替换成<replacement>中的内容
+
+去空格函数
+$(strip <string>)
+例如$(strip a b c d e)则返回abcde
+
+查找字符串
+$(findstring <find>,<in>)
+$(findstring a,a b c)
+功能:在<in>的字符串中查找<find>字符串, 找到则返回<find>, 否则返回空字符串
+
+过滤函数filter(重点)
+$(filter <pattern...>,<text>)
+功能:以<pattern>模式过滤<text>中的内容, 返回符合模式<pattern>的单词, <pattern>可以有多个
+
+反过滤函数filter-out(重点)
+$(filter-out <pattern...>,<text>)
+
+$(sort <list>)排序函数
+$(word <n>,<text>)取词函数
+$(wordlist <start>,<end>,<text>)取单词串函数
+$(words <text>)单词个数统计函数
+$(firstword <text>)取首单词函数
 
 
+2.文件名操作函数
+
+取目录函数dir(重点)
+$(dir <namelist>)
+功能:在文件名序列<namelist>中取出目录部分
+示例:$(dir src/dir dir2)
+返回值为src/ ./
+
+取文件名函数(重点)
+$(notdir <namelist>)
+功能:从文件名序列<namelist>中取出文件名部分
+示例:$(notdir src/foo.c doc)
+返回值为foo.c doc
+
+取后缀函数
+$(suffix <namelist>)
+功能:从文件名序列<namelist>中取出各个文件名的后缀, 若文件没有后缀, 则返回空
+示例:$(suffix src/foo.c src-2/foo2.c src/foo)
+返回值为.c .c
+
+$(basename <namelist>)取前缀函数
+$(addsuffix <suffix>,<namelist>)加后缀函数
+$(addprefix <prefix>,<names...>)加前缀函数
+
+$(join <list1>,<list2>)连接函数
+示例:$(join abbb ccc,123 45678) 返回值为abbb ccc123 45678
 
 
+3.foreach函数 循环函数
+$(foreach <var>,<list>,<text>)
+功能:将<list>中的单词逐一取出, 放到<var>临时变量中, 然后再执行<text>表达式, 每一次<text>会返回一个字符串,
+循环过程中, <text>所返回的每个字符串会以空格分隔, 循环结束时<text>则为foreach函数的返回值
+示例:
+names :=a b c d 
+files :=$(foreach n,$(names),$(n).o)
+$(files)的值为a.o b.o c.o d.o
+
+4.if函数
+功能与条件语句ifeq相类似
+$(if <condition>,<then-part>,<else-part>)
+若condition为真, 则返回<then-part>, 否则返回<else-part>, 若没有定义<else-part>则返回空
+
+5.call函数
+用来创建新参数化的函数
+$(call <expression>,<parm1>,<parm2>,<parm3>...)
+<expression>中的变量会依次被<parm>取代
+
+6.origin函数
+origin函数不操作变量的值, 指明了变量的来源
+$(origin <var>)
+返回值:
+undefined 	-变量没有被定义过
+default 	-默认的变量
+environment	-环境变量
+file 		-这个变量被定义在makefile中
+command line-这个变量在命令行中定义
+override	-override指示符重新定义的
+automatic	-命令运行中的自动化变量
 
 
+7.shell函数
+操作系统shell的命令, shell函数把执行操作系统命令后的输出作为函数返回
+$(shell <cmd>)
 
 
+8.控制make的运行
+$(error <text...>)		产生一个致命错误, <text>是错误信息
+$(warning <text...>)	不会让make退出, 输出一段警告信息, make继续运行
 
 
 
