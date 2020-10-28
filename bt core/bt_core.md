@@ -122,4 +122,35 @@ Role:选择当前连接的角色0x00-master 0x01-slave
 4)host收到controller发来的event: connect complete event
 
 
+7. 传统蓝牙pincode配对和安全简单配对(SSP: security simple pairing)流程
+pincode配对是最古老的配对方式, 配对的时候需要用户自己输入pincode来实现配对
+7.1 pincode的HCI流程:
+1)controller向houst发送pincode请求事件 PIN code request event	HCI_PIN_Code_Request (参数BD_ADDR)
+2)host向controller发送pincode请求回应的command	HCI_PIN_Code_Request_Reply(参数BD_ADDR, pincodeLenght, pincode)
+pincodeLenght范围0x01~0x10
+3)controller发送command complete(status BD_ADDR)
+
+7.2 蓝牙SSP配对方式(简单安全配对 simple secure pairing)
+就是点蓝牙连接的时候, 手机直接弹出配对码, 对方输入正确的配对码来进行配对
+1)host先向controller发送Write enable SSP的command, 
+2)Set Event Mask, 允许controller向host发送相关的event
+3)host接收到controller发来的HCI_IO_Capability_Response event(参数BD_ADDR, IO_Capability, OOB_Data_Present, Authentication_Requirements)
+IO_Capability: IO能力, displayOnly, displayYesNO, keyboardOnly, noInputNoOutput
+OOB_Data_Present: 是否需要OOB data, 使用带外(out of band)机制来发现设备以及交换或传送将在配对过程中使用的加密信息等场景
+Authentication_Requirements: 是否需要auth(0x00不需要, 0x01~0x05:MITM)
+4)host接收到controller发来的IO Capability Request请求事件(参数BD_ADDR)
+5)host发送IO Capability Request Reply的command: HCI_IO_Capability_Request_Reply(参数BD_ADDR, IO_Capability, OOB_Data_Present, Authentication_Requirements)
+并接收到controller发来的command complete with opcode
+参数与HCI_IO_Capability_Response_Event的参数类似
+6)host接收到用户确认请求事件 HCI_User_Confirmation_Request(参数:BD_ADDR, Numeric_Value随机数)
+7)host发送User Confirmation Request Reply command, 并接收到command complete with opcode
+8)host接收到controller发来的Simple Pairing Complete event(前提是步骤2已经设置好)
+DisplayOnly只是需要显示随机数字就好了
+DisplayYesNo让user来决定是否要配对或者不配对
+KeyBoardonly让用户通过键盘来输入配对码
+NoInputNoOutput啥也不需要显示
+(手机表现不太一样)
+
+
+
 
