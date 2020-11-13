@@ -151,6 +151,170 @@ KeyBoardonly让用户通过键盘来输入配对码
 NoInputNoOutput啥也不需要显示
 (手机表现不太一样)
 
+8. L2CAP概念 
+逻辑链路控制和适配层协议(Logical Link Control and Adaptation Layer Protocol), 缩写为L2CAP.
+通过协议多路复用 分段重组操作和组概念, 向高层提供面向连接的和无连接的数据服务, L2CAP还屏蔽了低层传输协议中的很多特性, 
+使得高层协议应用开发人员可以不必了解基层协议而进行开发, L2CAP在整个协议栈中的位置是架在上层协议和HCI中间
+Resource Manager有分包/组包, 重传/流控, 封装/调度
+Channel Manager有连接/断开/交互频道参数等
+
+Upper layer:
+Lower layer:
+L2CAP channel:
+SDU: Services Data Unit
+SDU Segment: 
+Segmentation: 
+Reassemble: 
+PDU: Protocol Data Unit
+Basic L2CAP Header: 
+Basic information frame(B-frame): 
+Information frame(I-frame):
+Supervisory frame(S-frame):
+Control frame(C-frame):
+Gproup frame(G-frame):
+Credit-based frame(K-frame):
+Fragment:
+Fragmentation:
+Recombination:
+MTU(Maximum Transmission Unit):
+MPS(Maximum PDU payload Size):
+Signaling MTU:
+Connectionless MTU:
+MaxTransmit:
+
+8.1 信道标识符(Channel Identifier CID)
+CID表示逻辑信道本地端设备的名字
+经典蓝牙使用到的CID:
+0x0000 Null identifier
+0x0001 L2CAP Signaling channel 
+0x0002 Connectionless channel
+0x0003 AMP Manager protocol
+0x0007 BR/EDR Security Manager
+0x003F AMP Test Manager
+0x0040~0xFFFF Dynamically allocated
+
+8.2 L2CAP操作模式
+L2CAP一共有以下几个操作模式
+Basic L2CAP Mode, 基本模式(默认模式)
+Flow Control Mode, 此模式下不会进行重传, 但丢失的数据能被检测到, 并报告丢失
+Retransmission Mode, 此模式确保数据包都能成功的传输给对端设备
+Enhanced Retransmission Mode, 此模式和重传模式类似, 加入了Poll-bit等提高恢复效率
+Streaming Mode, 此模式是为了真实的实时传输, 数据包被编号但是不需要ACK确认 设定一个超时定时器, 一旦定时器超时就将超时数据冲掉
+LE Credit Based Flow Control Mode, 被用于LE设备通讯
+Enhanced Credit BasedFlow Control Mode
+
+9. L2CAP数据格式
+没有特殊说明的情况, 一般使用小端模式
+9.1 面向连接的基本模式数据格式(CONNECTION-ORIENTEDCHANNELS IN BASIC L2CAP MODE)称为B-frame
+Length + channel ID + information payload
+(Length + channel ID: basic L2CAP header)
+Length: Information payload的长度(16bit)
+channel ID: The channel ID (CID) identifies the destination channel endpoint of the packet(16bit)
+Infomation payload：就是后面的数据, 有可能是L2CAP本身的(比如signal通道), 也有可能是上层协议
+
+9.2 无连接的基本模式数据格式(CONNECTIONLESS DATACHANNEL IN BASIC L2CAP MODE)称为G-frame
+Length + 0x0002 + PSM + information pyload
+Length:(InFormation payload + PSM)的长度(16bit)
+CID固定为0x0002
+PSM(Protocol/Service Multiplexer): 主要就是用于标识协议的(>=16bit)
+
+Protocol				PSM				Reference
+SDP						0x0001			See Bluetooth Service Discovery Protocol (SDP), Bluetooth SIG
+RFCOMM					0x0003			See RFCOMM with TS 07.10, Bluetooth SIG
+TCS-BIN					0x0005			See Bluetooth Telephony Control Specification / TCS Binary, Bluetooth SIG
+TCS-BIN-CORDLESS		0x0007			See Bluetooth Telephony Control Specification / TCS Binary, Bluetooth SIG
+BNEP					0x000F			See Bluetooth Network Encapsulation Protocol, Bluetooth SIG
+HID_Control				0x0011			See Human Interface Device, Bluetooth SIG
+HID_Interrupt			0x0013			See Human Interface Device, Bluetooth SIG
+UPnP					0x0015			See [ESDP], Bluetooth SIG
+AVCTP					0x0017			See Audio/Video Control Transport Protocol, Bluetooth SIG
+AVDTP					0x0019			See Audio/Video Distribution Transport Protocol, Bluetooth SIG
+AVCTP_Browsing			0x001B			See Audio/Video Remote Control Profile, Bluetooth SIG
+UDI_C-Plane				0x001D			See the Unrestricted Digital Information Profile [UDI], Bluetooth SIG
+ATT						0x001F			See Bluetooth Core Specification​
+​3DSP					0x0021​	​​		See 3D Synchronization Profile, Bluetooth SIG.
+​LE_PSM_IPSP	​			0x0023			​See Internet Protocol Support Profile (IPSP), Bluetooth SIG
+OTS						0x0025			See Object Transfer Service (OTS), Bluetooth SIG
+EATT					0x0027			See Bluetooth Core Specification
+
+InFormation payload：上层协议的数据
+
+9.3 信号封包的数据格式(SIGNALING PACKET FORMATS)
+L2CAP的命令叫做signaling command(简称C-frame), 所有的命令都是通过signaling channel来发送, 
+传统蓝牙的CID是固定的0x0001, 低功耗的CID是固定的0x0005
+命令格式为:
+Lenght + channel ID + Information payload
+
+channel固定0x0001或0x0005
+在signaling command的information payload的格式为:
+Code(1Byte) + identifier(1Byte) + length(2Bytes) + data
+
+Identifier(1octet): 用于标示command的发送序列, response必须跟request相同
+Length(2octets): 用于标示后续的data长度
+Data(0 or more octets): 针对不同的signaling command, 后续的data是不同的, 具体command具体分析
+
+9.3.1 信号封包介绍
+针对于每个SIGNALING来说明
+1) L2CAP_COMMAND_REJECT_RSP(CODE 0x01)
+Code(0x01 1Byte) + identifier(1Byte) + length(2Bytes) + Reason + Data(option)
+Reason(2 octets): 告知remote端为什么发送拒绝封包, reason有以下值:
+如果拒绝reason是0x0000, 那么是remote端发送的command id是错误的, data部分则是0byte, 什么都不需要填写
+如果拒绝reason是0x0001, 那么就是MTU有问题, data就是2byte的MTU
+如果拒绝reason是0x0002, 那么会有4byte的data, 分别来表示local(first) and remote(second) channel endpoints
+
+2) L2CAP_CONNECTION_REQ(CODE 0x02)
+发起连接请求
+Code(0x02 1Byte) + identifier(1Byte) + length(2Bytes) + PSM + Source CID
+PSM: (Protocol/Service Multiplexer)用于标识协议的(同G-frame)
+Source CID:连接的放用source ID, 也就是本地的CID 动态申请的0x0040~0xFFFF
+
+3) L2CAP_CONNECTION_RSP(CODE 0x03)
+响应发起连接请求
+Code(0x03 1Byte) + identifier(1Byte) + length(2Bytes) + Destination CID + Source CID + Result(2Bytes) + Status(2Bytes)
+Destination CID: 可以认为是发送response的本地CID
+Source CID：发送L2CAP_CONNECTION_REQ的CID
+Result: 连接的结果
+0x0000 Connection successful
+0x0001 Connection pending
+0x0002~0x0007 Connection refuse...
+Status:只有当Result = 0x0001 connection pending会用到
+0x0000 no further information available
+0x0001 authentication pending
+0x0002 authorization pending
+
+4) L2CAP_CONFIGURATION_REQ(CODE 0x04)
+发起配置请求
+Code(0x03 1Byte) + identifier(1Byte) + length(2Bytes) + Destination CID + Flags(2Bytes) + Configuration option
+
+5) L2CAP_CONFIGURATION_RSP(CODE 0x05)
+发起配置回应
+
+6) L2CAP_DISCONNECTION_REQ(CODE 0x06)
+L2CAP channel断开请求
+
+7) L2CAP_DISCONNECTION_RSP(CODE 0x07)
+断开请求的reponse
+
+8) L2CAP_ECHO_REQ(CODE 0x08)
+用来请求一个L2CAP的ECHO response
+
+9) L2CAP_ECHO_RSP(CODE 0x09)
+回复一个echo request
+
+10) L2CAP_INFORMATION_REQ(CODE 0x0A)
+信息请求, 用来请求一些信息
+
+11) L2CAP_INFORMATION_RSP(CODE 0x0B)
+Information请求的response
 
 
+9.4 传统L2CAP的连接流程
+前面使用signaling command C-frame 后面使用基本模式B-frame
+9.4.1 主机发送L2CAP Connection Request with RFCOMM PSM
+9.4.2 从机回复L2CAP Connection Response
+9.4.3 主机发送L2CAP Configure Request配置请求 with MTU
+9.4.4 从机回复L2CAP Configure Response
+9.4.5 若不成功 从机可以发送L2CAP Configure Request配置请求 with MTU重新配置
+9.4.6 后续SDU的交互 B-frame格式:
+Length + channel ID + information payload
 
